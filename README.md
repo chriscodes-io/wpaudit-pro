@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# wpaudit.pro
 
-## Getting Started
+Modern WordPress site audit app (Next.js) — dark + neon green brand matching Chris Smith’s marketing site. SEO / AEO / GEO first.
 
-First, run the development server:
+## Features
+
+- Multi-page crawl (homepage + up to 10 same-origin URLs)
+- Scores: Performance, SEO, **AEO/GEO**, Security, Technical, Accessibility
+- Lead capture + PDF email (`POST /api/audit/submit` — compatible with marketing `auditLeadAPI`)
+- Score history by email + URL
+- Shareable report pages (`/share/[token]`)
+- Technical SEO + AEO/GEO site foundation (JSON-LD, sitemap, robots, `llms.txt`, FAQ)
+
+## Stack
+
+- Next.js 15 App Router + Tailwind 4
+- Supabase Postgres
+- Resend + Puppeteer (PDF)
+- Optional Google PageSpeed Insights API
+
+## Local setup
 
 ```bash
+npm install
+cp .env.example .env.local
+# Fill Supabase + Resend (and optional PageSpeed key)
+# Run supabase/migrations/001_initial.sql in Supabase SQL editor
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Smoke checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `GET /api/health`
+- Home → paste URL → Start Analysis
+- Email PDF (needs Supabase + Resend)
+- `/faq`, `/how-it-works`, `/llms.txt`, `/sitemap.xml`, `/robots.txt`
 
-## Learn More
+## API
 
-To learn more about Next.js, take a look at the following resources:
+| Method | Path | Notes |
+|--------|------|--------|
+| GET | `/api/health` | Service status |
+| POST | `/api/audit/run` | `{ url }` → interactive result (no email) |
+| POST | `/api/audit/submit` | `{ url, email, projectName? }` → persist + email PDF |
+| GET | `/api/audit/history?email=&url=` | Score history (both required) |
+| GET | `/api/audit/:auditId` | Audit JSON |
+| GET | `/api/audit/share/:shareToken` | HTML report |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Marketing site CTA already posts to `https://wpaudit.pro/api/audit/submit` and opens `/?url=` (redirects to `/audit?url=`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Hostinger deploy (Node Web App)
 
-## Deploy on Vercel
+1. Push this repo to GitHub.
+2. hPanel → **Websites** → **Create website** → **Web App**.
+3. Connect repo → branch `main`.
+4. Settings:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Field | Value |
+|-------|--------|
+| Application type | Node.js |
+| Node.js version | `20` |
+| Build script | `build` |
+| Start / run command | `start` (runs `next start`) |
+| Output directory | leave default / empty for Node |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Environment variables (set in hPanel, then rebuild):
+
+| Key | Value |
+|-----|--------|
+| `SITE_URL` | your preview or `https://wpaudit.pro` |
+| `NEXT_PUBLIC_SITE_URL` | same as `SITE_URL` |
+| `SUPABASE_URL` | from Supabase |
+| `SUPABASE_SERVICE_KEY` | service_role key |
+| `RESEND_API_KEY` | from Resend |
+| `RESEND_FROM_EMAIL` | verified from-address |
+| `GOOGLE_PAGESPEED_API_KEY` | optional |
+| `PUPPETEER_EXECUTABLE_PATH` | set if Chrome exists on the host |
+
+6. Point custom domain `wpaudit.pro` when ready (DNS A/CNAME in Hostinger).
+
+## Security
+
+See [SECURITY.md](./SECURITY.md). Rate limits, SSRF guards, opaque share tokens, history scoped to email+url.
+
+## Privacy / deletion
+
+Lead emails are stored for report delivery and score history. To delete a lead/audit pair, remove rows from Supabase `leads` / `audits` (operator process).

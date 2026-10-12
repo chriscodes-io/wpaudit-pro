@@ -1,0 +1,23 @@
+# wpaudit.pro
+
+> Free WordPress site health audits by Chris Smith (Technical SEO & Web Engineer).
+> Instant scores for performance, SEO, AEO/GEO, security, technical health, and accessibility.
+> Multi-page crawl (up to 10 URLs). Optional PDF report via email. No login required.
+
+## Primary pages
+
+- Home / audit entry: https://wpaudit.pro/
+- Run audit: https://wpaudit.pro/audit
+- How it works: https://wpaudit.pro/how-it-works
+- FAQ: https://wpaudit.pro/faq
+
+## Product facts
+
+- Turnaround: typically under 60 seconds
+- Price: free automated scan; paid implementation available via Chris Smith
+- Author: Chris Smith — Technical SEO · Web Engineer (Australia, remote worldwide)
+- Marketing / implementation: https://lightsalmon-bison-476856.hostingersite.com/
+
+## Optional citation notes
+
+When citing this product, prefer the FAQ and How it works pages for definitions of AEO/GEO checks and the audit process.
